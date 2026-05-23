@@ -1,0 +1,60 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+const HF_TOKEN = process.env.HUGGINGFACE_API_KEY || ''
+
+export async function POST(req: NextRequest) {
+  try {
+    const { prompt, model = 'stable-diffusion' } = await req.json()
+
+    if (!prompt) {
+      return NextResponse.json(
+        { error: 'Prompt is required' },
+        { status: 400 }
+      )
+    }
+
+    let apiUrl = ''
+    let payload = { inputs: prompt }
+
+    switch (model) {
+      case 'stable-diffusion':
+        apiUrl = 'https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5'
+        break
+      case 'flux':
+        apiUrl = 'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev'
+        payload = { inputs: prompt }
+        break
+      default:
+        apiUrl = 'https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5'
+    }
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${HF_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`HuggingFace API error: ${response.statusText}`)
+    }
+
+    const blob = await response.blob()
+    const buffer = await blob.arrayBuffer()
+    const base64 = Buffer.from(buffer).toString('base64')
+
+    return NextResponse.json({
+      success: true,
+      image: `data:image/jpeg;base64,${base64}`,
+      model: model,
+    })
+  } catch (error) {
+    console.error('Image generation error:', error)
+    return NextResponse.json(
+      { error: 'Failed to generate image' },
+      { status: 500 }
+    )
+  }
+}
