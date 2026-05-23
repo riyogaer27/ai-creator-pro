@@ -1,21 +1,8 @@
 [build]
-command = "npm run build"
-functions = "out"
-publish = ".next"
-
-[functions]
-node_bundler = "esbuild"
-external_node_modules = ["@supabase/supabase-js"]
+  command = "npm run build"
+  publish = ".next"
 
 [[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
-
-[dev]
-command = "npm run dev"
-port = 3000
-
-[[edge_functions]]
-path = "/api/*"
-function = "api"
+  from = "/*"
+  to = "/index.html"
+  status = 200
