@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { Sparkles, Zap, Video } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useRouter } from 'next/navigation'
@@ -95,7 +95,6 @@ function CharacterStudio() {
   const [prompt, setPrompt] = useState('')
   const [referenceImage, setReferenceImage] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -106,6 +105,7 @@ function CharacterStudio() {
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDragging(false)
     const file = e.dataTransfer.files[0]
     if (file) handleFile(file)
@@ -113,6 +113,7 @@ function CharacterStudio() {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDragging(true)
   }
 
@@ -129,7 +130,7 @@ function CharacterStudio() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(prompt)
-    alert('Prompt copied to clipboard!')
+    alert('Prompt copied!')
   }
 
   return (
@@ -141,33 +142,33 @@ function CharacterStudio() {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={() => setIsDragging(false)}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
+            className={`relative border-2 border-dashed rounded-lg text-center transition-colors ${
               isDragging ? 'border-purple-500 bg-purple-600/10' : 'border-neutral-700 hover:border-purple-600/50'
             }`}
           >
-            {referenceImage ? (
-              <img src={referenceImage} alt="Reference" className="max-h-48 mx-auto rounded-lg object-cover" />
-            ) : (
-              <>
-                <div className="text-5xl mb-4">🎭</div>
-                <p className="text-neutral-400 text-sm mb-2">
-                  {isDragging ? 'Drop image here!' : 'Drag & drop or click to upload'}
-                </p>
-                <p className="text-neutral-500 text-xs">PNG, JPG up to 10MB</p>
-              </>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
-            />
+            <label style={{ display: 'block', padding: '3rem', cursor: 'pointer' }}>
+              {referenceImage ? (
+                <img src={referenceImage} alt="Reference" className="max-h-48 mx-auto rounded-lg object-cover" />
+              ) : (
+                <>
+                  <div className="text-5xl mb-4">🎭</div>
+                  <p className="text-neutral-400 text-sm mb-2">
+                    {isDragging ? 'Drop image here!' : 'Drag & drop or click to upload'}
+                  </p>
+                  <p className="text-neutral-500 text-xs">PNG, JPG up to 10MB</p>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+              />
+            </label>
           </div>
           {referenceImage && (
             <button onClick={() => setReferenceImage(null)} className="mt-3 text-xs text-neutral-500 hover:text-red-400 transition-colors">
-              Remove image
+              ✕ Remove image
             </button>
           )}
         </div>
@@ -307,13 +308,13 @@ function ImageGeneration() {
           {generatedImage ? (
             <>
               <img src={generatedImage} alt="Generated" className="w-full rounded-lg mb-6 max-h-80 object-cover" />
-              <a href={generatedImage} download="generated-image.png" className="w-full btn-secondary text-sm mb-2 text-center block">⬇️ Download Image</a>
+              <a href={generatedImage} download="generated-image.png" className="w-full btn-secondary text-sm mb-2 text-center block">⬇️ Download</a>
             </>
           ) : (
             <div className="flex-1 bg-gradient-to-br from-neutral-800 to-neutral-900 rounded-lg mb-6 flex items-center justify-center min-h-80">
               <div className="text-center">
                 <div className="text-5xl mb-3">🎨</div>
-                <p className="text-sm text-neutral-500">{generating ? 'Generating...' : 'Generated image will appear here'}</p>
+                <p className="text-sm text-neutral-500">{generating ? 'Generating...' : 'Image will appear here'}</p>
               </div>
             </div>
           )}
@@ -333,7 +334,6 @@ function MotionCapture() {
   const [motionData, setMotionData] = useState<any>(null)
   const [error, setError] = useState('')
   const [isDragging, setIsDragging] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith('video/')) { setError('Please select a video file'); return }
@@ -343,6 +343,7 @@ function MotionCapture() {
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setIsDragging(false)
     const file = e.dataTransfer.files[0]
     if (file) handleFile(file)
@@ -374,19 +375,25 @@ function MotionCapture() {
             <div className="section-title">Upload Video Reference</div>
             <div
               onDrop={handleDrop}
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true) }}
               onDragLeave={() => setIsDragging(false)}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
+              className={`relative border-2 border-dashed rounded-lg text-center transition-colors ${
                 isDragging ? 'border-purple-500 bg-purple-600/10' : 'border-neutral-700 hover:border-purple-600/50'
               }`}
             >
-              <div className="text-5xl mb-4">🎬</div>
-              <p className="text-neutral-400 text-sm mb-2">{isDragging ? 'Drop video here!' : 'Click to select or drag & drop your video'}</p>
-              <p className="text-neutral-500 text-xs">MP4, WebM up to 100MB</p>
-              <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+              <label style={{ display: 'block', padding: '3rem', cursor: 'pointer' }}>
+                <div className="text-5xl mb-4">🎬</div>
+                <p className="text-neutral-400 text-sm mb-2">{isDragging ? 'Drop video here!' : 'Click to select or drag & drop'}</p>
+                <p className="text-neutral-500 text-xs">MP4, WebM up to 100MB</p>
+                <input
+                  type="file"
+                  accept="video/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                />
+              </label>
             </div>
-            {videoFile && <p className="text-sm text-green-400 mt-4">✅ Selected: {videoFile.name}</p>}
+            {videoFile && <p className="text-sm text-green-400 mt-4">✅ {videoFile.name}</p>}
             {error && <p className="text-sm text-red-400 mt-4">❌ {error}</p>}
           </div>
 
