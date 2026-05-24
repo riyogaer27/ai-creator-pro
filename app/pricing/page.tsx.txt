@@ -1,0 +1,94 @@
+'use client'
+
+import { useAuth } from '@/lib/auth-context'
+import { motion } from 'framer-motion'
+import { Check } from 'lucide-react'
+
+export default function PricingPage() {
+  const { isAdmin } = useAuth()
+
+  const plans = [
+    {
+      name: 'Starter',
+      price: '199.000',
+      credits: 100,
+      features: [
+        '50 Image Generation',
+        '10 Motion Captures',
+        '5 Characters',
+        'Email Support',
+      ],
+    },
+    {
+      name: 'Premium',
+      price: '499.000',
+      credits: 300,
+      features: [
+        '200 Image Generation',
+        '50 Motion Captures',
+        '20 Characters',
+        'Priority Support',
+        'API Access',
+      ],
+    },
+    {
+      name: 'Enterprise',
+      price: '999.000',
+      credits: 1000,
+      features: [
+        '1000 Image Generation',
+        '200 Motion Captures',
+        '100 Characters',
+        '24/7 Priority Support',
+        'Full API Access',
+        'Custom Integration',
+      ],
+    },
+  ]
+
+  return (
+    <div className="min-h-screen py-12">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-playfair text-gradient font-bold mb-4">
+            Pricing Plans
+          </h1>
+          <p className="text-neutral-400">
+            Pilih plan yang sesuai dengan kebutuhan kamu
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {plans.map((plan, i) => (
+            <motion.div
+              key={plan.name}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="card p-8 hover:border-purple-600/50 transition-all"
+            >
+              <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+              <div className="mb-6">
+                <span className="text-4xl font-bold">Rp {plan.price}</span>
+                <span className="text-neutral-400 text-sm">/month</span>
+              </div>
+
+              <ul className="space-y-3 mb-6">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button className="w-full btn-primary">
+                {isAdmin ? 'Set as Default' : 'Subscribe Now'}
+              </button>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}

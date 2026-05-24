@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sparkles, Zap, Video, Image as ImageIcon } from 'lucide-react'
+import { Sparkles, Zap, Video } from 'lucide-react'
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('character')
